@@ -13,10 +13,12 @@ export class AttendanceController {
   @ApiQuery({ name: 'ip', required: true, description: 'IP máy chấm công (vd: 192.168.1.200)' })
   @ApiQuery({ name: 'month', required: true, type: Number, description: 'Tháng cần xuất dữ liệu' })
   @ApiQuery({ name: 'year', required: true, type: Number, description: 'Năm cần xuất dữ liệu' })
+  @ApiQuery({ name: 'commKey', required: false, type: Number, description: 'Mật mã kết nối máy chấm công (Comm Key), mặc định là 0 nếu không cấu hình' })
   async exportAttendance(
     @Query('ip') ip: string,
-    @Query('month') month: number,
-    @Query('year') year: number,
+    @Query('month') month: string,
+    @Query('year') year: string,
+    @Query('commKey') commKey: string,
     @Res() res: Response,
   ) {
     if (!ip || !month || !year) {
@@ -24,7 +26,8 @@ export class AttendanceController {
     }
 
     try {
-      const excelBuffer = await this.attendanceService.exportAttendanceReport(ip, Number(month), Number(year));
+      const parsedCommKey = commKey ? Number(commKey) : 0;
+      const excelBuffer = await this.attendanceService.exportAttendanceReport(ip, Number(month), Number(year), parsedCommKey);
       
       const fileName = `Bao_Cao_Cham_Cong_Thang_${month}_${year}.xlsx`;
       

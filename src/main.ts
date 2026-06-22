@@ -5,6 +5,9 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Enable CORS
+  app.enableCors();
+
   const config = new DocumentBuilder()
     .setTitle('Time Attendance API')
     .setDescription('The Time Attendance API description')
