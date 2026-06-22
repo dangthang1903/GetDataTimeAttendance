@@ -40,4 +40,29 @@ export class AttendanceController {
       throw new HttpException(error.message || 'Lỗi xử lý file', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
+  @Get('test-data')
+  @ApiOperation({ summary: 'Lấy dữ liệu thô (JSON) từ máy chấm công để kiểm tra (debug)' })
+  @ApiQuery({ name: 'ip', required: true, description: 'IP máy chấm công' })
+  @ApiQuery({ name: 'month', required: false, type: Number, description: 'Tháng cần xuất dữ liệu (tuỳ chọn)' })
+  @ApiQuery({ name: 'year', required: false, type: Number, description: 'Năm cần xuất dữ liệu (tuỳ chọn)' })
+  @ApiQuery({ name: 'commKey', required: false, type: Number, description: 'Comm Key' })
+  async getRawData(
+    @Query('ip') ip: string,
+    @Query('month') month: string,
+    @Query('year') year: string,
+    @Query('commKey') commKey: string,
+  ) {
+    if (!ip) {
+      throw new HttpException('Thiếu tham số ip', HttpStatus.BAD_REQUEST);
+    }
+    try {
+      const parsedCommKey = commKey ? Number(commKey) : 0;
+      const parsedMonth = month ? Number(month) : undefined;
+      const parsedYear = year ? Number(year) : undefined;
+      return await this.attendanceService.getRawAttendanceData(ip, parsedCommKey, parsedMonth, parsedYear);
+    } catch (error: any) {
+      throw new HttpException(error.message || 'Lỗi khi lấy dữ liệu JSON', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
 }

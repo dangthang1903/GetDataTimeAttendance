@@ -333,4 +333,81 @@ export class AttendanceService {
       throw new Error(`Lỗi khi kết nối hoặc xử lý dữ liệu từ máy chấm công: ${errMsg}`);
     }
   }
+
+  async getRawAttendanceData(ip: string, commKey: number = 0, month?: number, year?: number): Promise<any> {
+    let zkInstance: any;
+    try {
+      this.logger.log(`Connecting to ZKTeco device at ${ip} for raw data...`);
+      zkInstance = new ZKLib(ip, 4370, 10000, 4000);
+
+      // Capture connect response to know if unauthenticated (2005)
+      let connectResponseCmd: number = 0;
+      if (zkInstance.jtcp) {
+        zkInstance.jtcp.connect = function() {
+          return new Promise(async (resolve, reject) => {
+            try {
+              const { COMMANDS } = require('zkh-lib/src/command');
+              const reply = await this.executeCmd(COMMANDS.CMD_CONNECT, '');
+              if (reply) {
+                connectResponseCmd = reply.readUInt16LE(0);
+                resolve(true);
+              } else {
+                reject(new Error('NO_REPLY_ON_CMD_CONNECT'));
+              }
+            } catch (err) {
+              reject(err);
+            }
+          });
+        };
+      }
+
+      await zkInstance.createSocket();
+      this.logger.log('Connected to ZKTeco successfully for raw data.');
+
+      patchZKInstance(zkInstance);
+
+      const { COMMANDS } = require('zkh-lib/src/command');
+      if (connectResponseCmd === COMMANDS.CMD_ACK_UNAUTH || commKey !== 0) {
+        this.logger.log(`Device requires authentication. Sending CMD_AUTH...`);
+        const authKey = makeCommKey(commKey, zkInstance.jtcp.sessionId);
+        const authReply = await zkInstance.jtcp.executeCmd(COMMANDS.CMD_AUTH, authKey);
+        const authCmdId = authReply.readUInt16LE(0);
+        
+        if (authCmdId !== COMMANDS.CMD_ACK_OK) {
+          throw new Error(`Authentication failed with ZKTeco device. Code: ${authCmdId}`);
+        }
+      }
+
+      this.logger.log('Fetching users and logs...');
+      const usersData = await zkInstance.getUsers();
+      const logsData = await zkInstance.getAttendances();
+
+      await zkInstance.disconnect();
+
+      let logs = logsData?.data || [];
+
+      // Filter if month and year are provided
+      if (month && year) {
+        const targetMonthStart = new Date(year, month - 1, 1);
+        const targetMonthEnd = endOfMonth(targetMonthStart);
+
+        logs = logs.filter((log: any) => {
+          const recordDate = typeof log.recordTime === 'string' ? parseISO(log.recordTime) : new Date(log.recordTime);
+          return isWithinInterval(recordDate, { start: targetMonthStart, end: targetMonthEnd });
+        });
+      }
+
+      return {
+        users: usersData?.data || [],
+        logs: logs
+      };
+    } catch (error: any) {
+      this.logger.error('Error fetching raw data from ZKTeco', error);
+      if (zkInstance) {
+        try { await zkInstance.disconnect(); } catch (e) {}
+      }
+      const errMsg = error.err?.message || error.message || error;
+      throw new Error(`Lỗi khi lấy JSON từ máy chấm công: ${errMsg}`);
+    }
+  }
 }
