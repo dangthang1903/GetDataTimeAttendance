@@ -1,98 +1,83 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Phần Mềm Quản Lý Chấm Công LIMS
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Dự án này là một phần mềm Quản lý điểm danh từ máy chấm công vân tay (ZKTeco). Hệ thống được đóng gói dưới dạng Desktop App (chạy đa nền tảng) sử dụng công nghệ Electron, với Backend là NestJS và Frontend là React + Vite.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Cấu Trúc Dự Án
+Dự án được cấu trúc theo dạng Monorepo bao gồm:
+- `/backend`: Mã nguồn Backend (NestJS, chạy ở port 3002). Đảm nhiệm việc kết nối trực tiếp với máy chấm công ZKTeco thông qua TCP/IP.
+- `/frontend`: Mã nguồn Frontend (React, Vite, Tailwind CSS v4, chạy ở port 5173). Giao diện hiển thị, thiết kế tĩnh, bộ lọc nhanh (Client-side pagination).
+- `electron-main.js`: File cấu hình khởi chạy phần mềm desktop (kết hợp cả backend và frontend vào chung 1 cửa sổ).
+- `package.json` (root): Điều phối các lệnh chung (cài đặt, khởi chạy, build phần mềm).
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 🚀 Hướng Dẫn Cài Đặt Dành Cho Người Mới
 
-## Project setup
+Nếu bạn vừa mới Pull code này về máy, hãy làm theo tuần tự các bước dưới đây để có thể chạy được dự án.
+
+### 1. Yêu Cầu Hệ Thống (Prerequisites)
+- [Node.js](https://nodejs.org/) (Khuyến nghị bản **v18** hoặc **v20**).
+- Git.
+
+### 2. Cài Đặt Thư Viện (Install Dependencies)
+Do cấu trúc chia làm 2 thư mục độc lập nên bạn cần cài đặt thư viện ở cả 3 nơi (Root, Backend, Frontend).
+Hãy mở Terminal (hoặc Command Prompt) tại thư mục gốc của dự án và chạy lần lượt các lệnh sau:
 
 ```bash
-$ npm install
+# 1. Cài đặt các thư viện ở thư mục gốc (Electron, Concurrently...)
+npm install
+
+# 2. Cài đặt thư viện cho Backend
+cd backend
+npm install
+cd ..
+
+# 3. Cài đặt thư viện cho Frontend
+cd frontend
+npm install
+cd ..
 ```
 
-## Compile and run the project
+---
+
+## 🛠 Hướng Dẫn Chạy Môi Trường Phát Triển (Dev Mode)
+
+Trong quá trình viết code hoặc sửa giao diện, bạn cần chạy hệ thống ở môi trường Dev (tự động cập nhật code khi bạn lưu file).
+
+Mở Terminal tại **thư mục gốc**, gõ:
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm run dev
 ```
 
-## Run tests
+Lệnh này sẽ dùng `concurrently` để chạy song song 2 luồng:
+1. Backend khởi động tại: `http://localhost:3002`
+2. Frontend khởi động tại: `http://localhost:5173` (bạn có thể bấm vào link này trên terminal để xem giao diện trên trình duyệt).
+
+---
+
+## 📦 Hướng Dẫn Đóng Gói Ra File Cài Đặt (.exe)
+
+Khi bạn đã sửa code xong và muốn xuất ra thành 1 file cài đặt để gửi cho khách hàng (nhân sự) cài vào máy tính của họ:
+
+Mở Terminal tại **thư mục gốc**, gõ:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm run build:app
 ```
 
-## Deployment
+**Quá trình này diễn ra như sau:**
+- Đầu tiên sẽ build thư mục `backend` sang code Javascript thuần (`/backend/dist`).
+- Sau đó sẽ build thư mục `frontend` thành giao diện web tĩnh (`/frontend/dist`).
+- Cuối cùng, thư viện `electron-builder` sẽ gom toàn bộ code ở trên, đưa vào môi trường Chromium (Electron) và nén lại thành 1 file cài đặt Setup (NSIS).
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+**Kết quả:**
+- Sau khi chạy xong, hãy vào thư mục `release/` (nằm ở thư mục gốc).
+- Bạn sẽ thấy file `.exe` ví dụ như: `Quản Lý Chấm Công Setup 0.0.1.exe`.
+- Đây là file cuối cùng dùng để cài đặt (Double-click là tự cài và có Icon ngoài Desktop).
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+---
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## 💡 Lưu Ý Quan Trọng Khác
+- **Không bao giờ Commit thư mục `release/`, `dist/`, và `node_modules/`** lên Git. Chúng rất nặng (hàng trăm MB) và sẽ gây lỗi không thể Push code. File `.gitignore` hiện tại đã chặn các thư mục này.
+- IP mặc định để test máy chấm công thường là `192.168.1.200`. Máy tính chạy phần mềm (hoặc Backend) phải **chung mạng LAN** với máy chấm công thì mới lấy được dữ liệu.
