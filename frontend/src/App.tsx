@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 import Login from './components/Login';
 import { PowerOff } from 'lucide-react';
 import Dashboard from './components/Dashboard';
@@ -10,6 +11,24 @@ export type DeviceConfig = {
 
 function App() {
   const [device, setDevice] = useState<DeviceConfig | null>(null);
+
+  useEffect(() => {
+    // Only listen if we are connected
+    if (!device) return;
+
+    const eventSource = new EventSource('/network/status');
+    
+    eventSource.addEventListener('disconnect', (e) => {
+      // Backend reported that the cable was unplugged
+      const data = JSON.parse(e.data);
+      alert(`⚠️ CẢNH BÁO: ${data.message}\n\nHệ thống đã tự động khôi phục mạng về trạng thái bình thường (DHCP). Vui lòng cắm lại dây nếu muốn tiếp tục sử dụng.`);
+      setDevice(null); // Kick out to Login screen
+    });
+
+    return () => {
+      eventSource.close();
+    };
+  }, [device]);
   const [showDisconnectConfirm, setShowDisconnectConfirm] = useState(false);
 
   return (
@@ -74,7 +93,12 @@ function App() {
                 Hủy bỏ
               </button>
               <button
-                onClick={() => {
+                onClick={async () => {
+                  try {
+                    await axios.post('/network/restore');
+                  } catch (e) {
+                    console.error('Lỗi khi khôi phục mạng', e);
+                  }
                   setDevice(null);
                   setShowDisconnectConfirm(false);
                 }}
