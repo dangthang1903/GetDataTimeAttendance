@@ -5,42 +5,12 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
-  "main": "electron-main.js",
-  "build": {
-    "appId": "com.hrm.attendance",
-    "productName": "Quản Lý Chấm Công",
-    "directories": {
-      "output": "release"
-    },
-    "files": [
-      "backend/dist/**/*",
-      "frontend/dist/**/*",
-      "electron-main.js",
-      "node_modules/**/*",
-      "package.json"
-    ],
-    "win": {
-      "target": "nsis",
-      "requestedExecutionLevel": "requireAdministrator"
-    },
-    "nsis": {
-      "oneClick": true,
-      "perMachine": false,
-      "allowToChangeInstallationDirectory": false,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true,
-      "shortcutName": "Phần Mềm Chấm Công"
-    }
-  },
   "scripts": {
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:backend": "cd backend && nest start --watch",
     "dev:frontend": "cd frontend && npm run dev",
     "build:frontend": "cd frontend && npm run build",
     "build:backend": "cd backend && nest build",
-    "build:app": "npm run build:backend && npm run build:frontend && electron-builder --win",
-    "build:mac": "npm run build:backend && npm run build:frontend && electron-builder --mac",
-    "start:app": "npm run build:backend && npm run build:frontend && electron .",
     "build": "cd backend && nest build",
     "format": "prettier --write \"backend/src/**/*.ts\" \"backend/test/**/*.ts\"",
     "start": "cd backend && nest start",
@@ -78,8 +48,6 @@
     "@types/node": "^24.0.0",
     "@types/supertest": "^7.0.0",
     "concurrently": "^10.0.3",
-    "electron": "^42.4.1",
-    "electron-builder": "^26.15.3",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-prettier": "^5.2.2",

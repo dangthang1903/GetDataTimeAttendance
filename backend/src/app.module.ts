@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { AttendanceModule } from './modules/attendance/attendance.module';
-import { NetworkModule } from './modules/network/network.module';
 
 @Module({
   imports: [
@@ -11,7 +10,6 @@ import { NetworkModule } from './modules/network/network.module';
       exclude: ['/api/(.*)', '/attendance/(.*)'],
     }),
     AttendanceModule,
-    NetworkModule,
   ],
   controllers: [],
   providers: [],

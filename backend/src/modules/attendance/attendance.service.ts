@@ -230,6 +230,18 @@ function processAttendanceData(logs: any[], usersMap: Map<string, string>) {
 export class AttendanceService {
   private readonly logger = new Logger(AttendanceService.name);
 
+  async pingDevice(ip: string, commKey: number = 0): Promise<{ status: string, message: string }> {
+    let zkInstance: any;
+    try {
+      zkInstance = await this.connectToDevice(ip, commKey);
+      await zkInstance.disconnect();
+      return { status: 'success', message: 'Kết nối thành công' };
+    } catch (error: any) {
+      if (zkInstance) try { await zkInstance.disconnect(); } catch (e) {}
+      throw new Error('Đăng nhập thất bại');
+    }
+  }
+
   async exportAttendanceReport(ip: string, month: number, year: number, commKey: number = 0): Promise<Buffer> {
     let zkInstance: any;
     try {
@@ -519,7 +531,7 @@ export class AttendanceService {
       };
     } catch (error: any) {
       if (zkInstance) try { await zkInstance.disconnect(); } catch (e) {}
-      throw new Error(`Lỗi khi lấy danh sách user: ${error.message || error}`);
+      throw new Error('Đăng nhập thất bại');
     }
   }
 

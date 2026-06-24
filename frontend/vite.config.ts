@@ -7,7 +7,7 @@ export default defineConfig({
   base: './', // Important for Electron and NestJS static serving
   server: {
     proxy: {
-      '/attendance': 'http://localhost:3002'
+      '/attendance': 'http://localhost:3456'
     }
   }
 })

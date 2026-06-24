@@ -8,6 +8,23 @@ import { AttendanceService } from './attendance.service';
 export class AttendanceController {
   constructor(private readonly attendanceService: AttendanceService) {}
 
+  @Get('ping')
+  @ApiOperation({ summary: 'Kiểm tra kết nối tới máy chấm công' })
+  @ApiQuery({ name: 'ip', required: true, description: 'IP máy chấm công' })
+  @ApiQuery({ name: 'commKey', required: false, type: Number, description: 'Comm Key' })
+  async pingDevice(
+    @Query('ip') ip: string,
+    @Query('commKey') commKey: string,
+  ) {
+    if (!ip) throw new HttpException('Thiếu tham số ip', HttpStatus.BAD_REQUEST);
+    try {
+      const parsedCommKey = commKey ? Number(commKey) : 0;
+      return await this.attendanceService.pingDevice(ip, parsedCommKey);
+    } catch (error: any) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
   @Get('export')
   @ApiOperation({ summary: 'Lấy dữ liệu trực tiếp từ máy chấm công và xuất file Excel' })
   @ApiQuery({ name: 'ip', required: true, description: 'IP máy chấm công (vd: 192.168.1.200)' })

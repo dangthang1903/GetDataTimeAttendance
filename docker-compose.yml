@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  attendance-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: time-attendance-app
+    ports:
+      - "3456:3456"
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { DeviceConfig } from '../App';
-import { Server, KeyRound, Loader2, ArrowRight, Cable } from 'lucide-react';
+import { Server, KeyRound, Loader2, ArrowRight, Info } from 'lucide-react';
 import axios from 'axios';
 
 type LoginProps = {
@@ -8,11 +8,10 @@ type LoginProps = {
 };
 
 export default function Login({ onConnect }: LoginProps) {
-  const [ip, setIp] = useState('192.168.1.200');
-  const [commKey, setCommKey] = useState('0');
+  const [ip, setIp] = useState('');
+  const [commKey, setCommKey] = useState('');
   const [loading, setLoading] = useState(false);
-  const [autoConfiguring, setAutoConfiguring] = useState(false);
-  const [autoStatus, setAutoStatus] = useState('');
+
   const [error, setError] = useState('');
 
   const connectDevice = async (targetIp: string, targetCommKey: string) => {
@@ -20,8 +19,8 @@ export default function Login({ onConnect }: LoginProps) {
     setError('');
     
     try {
-      await axios.get('/attendance/users', {
-        params: { ip: targetIp, commKey: targetCommKey, page: 1, limit: 1 }
+      await axios.get('/attendance/ping', {
+        params: { ip: targetIp, commKey: targetCommKey }
       });
       onConnect({ ip: targetIp, commKey: targetCommKey });
     } catch (err: any) {
@@ -37,23 +36,7 @@ export default function Login({ onConnect }: LoginProps) {
     connectDevice(ip, commKey);
   };
 
-  const handleAutoConnect = async () => {
-    if (!ip) return;
-    setAutoConfiguring(true);
-    setError('');
-    setAutoStatus('Đang dò tìm card mạng và cấu hình IP tĩnh...');
 
-    try {
-      await axios.post('/network/auto-config', { targetIp: ip });
-      setAutoStatus('Đã thông mạng! Đang kết nối thiết bị...');
-      await connectDevice(ip, commKey);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Lỗi khi cấu hình tự động. Hãy đảm bảo bạn cắm dây mạng trực tiếp và chạy phần mềm bằng quyền Admin.');
-    } finally {
-      setAutoConfiguring(false);
-      setAutoStatus('');
-    }
-  };
 
   return (
     <div className="flex-1 flex items-center justify-center p-6">
@@ -111,52 +94,33 @@ export default function Login({ onConnect }: LoginProps) {
               </div>
             )}
             
-            {autoStatus && (
-              <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl text-sm text-blue-700 flex items-center">
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                {autoStatus}
-              </div>
-            )}
 
-            <div className="space-y-3">
-              <button
-                type="button"
-                onClick={handleAutoConnect}
-                disabled={loading || autoConfiguring}
-                className="w-full flex items-center justify-center py-3 px-4 border border-transparent rounded-xl shadow-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-70 disabled:cursor-not-allowed transition-all"
-              >
-                {autoConfiguring ? (
-                  <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    Đang thiết lập Plug & Play...
-                  </>
-                ) : (
-                  <>
-                    <Cable className="w-5 h-5 mr-2" />
-                    Cắm Dây & Tự Động Kết Nối
-                  </>
-                )}
-              </button>
-              
-              <button
-                type="submit"
-                disabled={loading || autoConfiguring}
-                className="w-full flex items-center justify-center py-3 px-4 border border-slate-200 rounded-xl shadow-sm text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 disabled:opacity-70 disabled:cursor-not-allowed transition-all"
-              >
-                {loading && !autoConfiguring ? (
-                  <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin text-slate-400" />
-                    Đang kết nối...
-                  </>
-                ) : (
-                  <>
-                    Kết nối bằng tay (Đã chỉnh IP)
-                    <ArrowRight className="w-5 h-5 ml-2 text-slate-400" />
-                  </>
-                )}
-              </button>
-            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full flex items-center justify-center py-3 px-4 border border-transparent rounded-xl shadow-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-70 disabled:cursor-not-allowed transition-all"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin text-white" />
+                  Đang kết nối...
+                </>
+              ) : (
+                <>
+                  Kết nối máy chấm công
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </>
+              )}
+            </button>
           </form>
+        </div>
+        
+        <div className="mt-6 flex items-start p-4 bg-blue-50/80 backdrop-blur-sm border border-blue-100 rounded-xl">
+          <Info className="w-5 h-5 text-blue-500 mr-3 mt-0.5 flex-shrink-0" />
+          <p className="text-sm text-blue-700 leading-relaxed">
+            <strong>Lưu ý kết nối:</strong> Nếu cắm mạng LAN trực tiếp vào máy tính, bạn cần thiết lập IP tĩnh cho máy tính cùng dải mạng với thiết bị. Nếu kết nối qua mạng công ty (Router/Switch), bạn không cần thiết lập IP tĩnh.
+          </p>
         </div>
         
         <p className="text-center text-sm text-slate-400 mt-6">

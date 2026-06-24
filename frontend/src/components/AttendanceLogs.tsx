@@ -21,6 +21,7 @@ type LogData = {
 export default function AttendanceLogs({ device }: { device: DeviceConfig }) {
   const [searchName, setSearchName] = useState('');
   
+  const [day, setDay] = useState<number | ''>('');
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [year, setYear] = useState(new Date().getFullYear());
   const [exporting, setExporting] = useState(false);
@@ -42,6 +43,12 @@ export default function AttendanceLogs({ device }: { device: DeviceConfig }) {
 
   // Client-side Filter
   const filteredLogs = logs.filter(log => {
+    if (day !== '') {
+      try {
+        const logDay = parseISO(log.date).getDate();
+        if (logDay !== day) return false;
+      } catch (e) {}
+    }
     if (!searchName) return true;
     const s = searchName.toLowerCase();
     return (log.name?.toLowerCase().includes(s) || log.userId?.includes(s));
@@ -92,8 +99,19 @@ export default function AttendanceLogs({ device }: { device: DeviceConfig }) {
             Nhật Ký Chấm Công ({total})
           </h3>
           
-          <div className="flex items-center space-x-2 bg-white border border-slate-200 rounded-lg p-1 shadow-sm">
+          <div className="flex items-center space-x-1 bg-white border border-slate-200 rounded-lg p-1 shadow-sm">
             <Calendar className="w-4 h-4 text-slate-400 ml-2" />
+            <select
+              value={day === '' ? '' : day}
+              onChange={(e) => { setDay(e.target.value === '' ? '' : Number(e.target.value)); setPage(1); }}
+              className="bg-transparent border-none text-sm font-medium focus:ring-0 cursor-pointer pr-8"
+            >
+              <option value="">Tất cả ngày</option>
+              {Array.from({ length: 31 }, (_, i) => i + 1).map(d => (
+                <option key={d} value={d}>Ngày {d}</option>
+              ))}
+            </select>
+            <div className="w-px h-4 bg-slate-300"></div>
             <select
               value={month}
               onChange={(e) => { setMonth(Number(e.target.value)); setPage(1); }}
