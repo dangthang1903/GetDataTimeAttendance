@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useState } from 'react';
 import Login from './components/Login';
 import { PowerOff } from 'lucide-react';
 import Dashboard from './components/Dashboard';
